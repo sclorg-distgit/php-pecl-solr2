@@ -1,3 +1,5 @@
+# centos/sclo spec file for php-pecl-solr2, from:
+#
 # remirepo spec file for php-pecl-solr2
 # with SCL compatibility, from Fedora:
 #
@@ -13,36 +15,30 @@
 %if 0%{?scl:1}
 %scl_package       php-pecl-solr2
 %global sub_prefix %{scl_prefix}
+%if "%{scl}" == "rh-php56"
+%global sub_prefix sclo-php56-
+%endif
+%if "%{scl}" == "rh-php70"
+%global sub_prefix sclo-php70-
+%endif
 %endif
 
 %global pecl_name solr
-#global prever    b
 %global with_zts  0%{!?_without_zts:%{?__ztsphp:1}}
-%if "%{php_version}" < "5.6"
-# After curl, json
-%global ini_name  %{pecl_name}.ini
-%else
 # After 20-curl, 40-json
 %global ini_name  50-%{pecl_name}.ini
-%endif
-# For full test (using localhost server) use --with tests
-# retrieve: docker pull omars/solr53
-# create:   docker run -d -p 8983:8983 --name solr5 -t omars/solr53
-# cleanup:  docker stop solr5 && docker rm solr5
-%global with_tests 0%{?_with_tests:1}
 
 Summary:        Object oriented API to Apache Solr
 Summary(fr):    API orientée objet pour Apache Solr
 Name:           %{?sub_prefix}php-pecl-solr2
 Version:        2.4.0
-Release:        3%{?dist}%{!?scl:%{!?nophptag:%(%{__php} -r 'echo ".".PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')}}
+Release:        1%{?dist}
 License:        PHP
 Group:          Development/Languages
 URL:            http://pecl.php.net/package/solr
 
 Source0:        http://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
 
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  %{?scl_prefix}php-devel
 BuildRequires:  %{?scl_prefix}php-pear
 BuildRequires:  %{?scl_prefix}php-curl
@@ -55,15 +51,14 @@ Requires:       %{?scl_prefix}php(zend-abi) = %{php_zend_api}
 Requires:       %{?scl_prefix}php(api) = %{php_core_api}
 Requires:       %{?scl_prefix}php-curl%{?_isa}
 Requires:       %{?scl_prefix}php-json%{?_isa}
-%{?_sclreq:Requires: %{?scl_prefix}runtime%{?_sclreq}%{?_isa}}
 
 Provides:       %{?scl_prefix}php-%{pecl_name}               = %{version}
 Provides:       %{?scl_prefix}php-%{pecl_name}%{?_isa}       = %{version}
 Provides:       %{?scl_prefix}php-pecl(%{pecl_name})         = %{version}
 Provides:       %{?scl_prefix}php-pecl(%{pecl_name})%{?_isa} = %{version}
-%if "%{?scl_prefix}" != "%{?sub_prefix}"
 Provides:       %{?scl_prefix}php-pecl-%{pecl_name}          = %{version}-%{release}
 Provides:       %{?scl_prefix}php-pecl-%{pecl_name}%{?_isa}  = %{version}-%{release}
+%if "%{?scl_prefix}" != "%{?sub_prefix}"
 Provides:       %{?scl_prefix}php-pecl-%{pecl_name}2         = %{version}-%{release}
 Provides:       %{?scl_prefix}php-pecl-%{pecl_name}2%{?_isa} = %{version}-%{release}
 %endif
@@ -75,33 +70,6 @@ Provides:       %{?sub_prefix}php-pecl-%{pecl_name}%{?_isa}  = %{version}-%{rele
 # Only one version of the extension
 Conflicts:      %{?sub_prefix}php-pecl-%{pecl_name}          < 2
 Conflicts:      %{?scl_prefix}php-pecl-%{pecl_name}          < 2
-%endif
-
-%if "%{?vendor}" == "Remi Collet" && 0%{!?scl:1}
-Obsoletes:     php53-pecl-%{pecl_name}2  <= %{version}
-Obsoletes:     php53u-pecl-%{pecl_name}2 <= %{version}
-Obsoletes:     php54-pecl-%{pecl_name}2  <= %{version}
-Obsoletes:     php54w-pecl-%{pecl_name}2 <= %{version}
-%if "%{php_version}" > "5.5"
-Obsoletes:     php55u-pecl-%{pecl_name}2 <= %{version}
-Obsoletes:     php55w-pecl-%{pecl_name}2 <= %{version}
-%endif
-%if "%{php_version}" > "5.6"
-Obsoletes:     php56u-pecl-%{pecl_name}2 <= %{version}
-Obsoletes:     php56w-pecl-%{pecl_name}2 <= %{version}
-%endif
-%if "%{php_version}" > "7.0"
-Obsoletes:     php70u-pecl-%{pecl_name}  <= %{version}
-Obsoletes:     php70w-pecl-%{pecl_name}  <= %{version}
-Obsoletes:     php70u-pecl-%{pecl_name}2 <= %{version}
-Obsoletes:     php70w-pecl-%{pecl_name}2 <= %{version}
-%endif
-%if "%{php_version}" > "7.1"
-Obsoletes:     php71u-pecl-%{pecl_name}  <= %{version}
-Obsoletes:     php71w-pecl-%{pecl_name}  <= %{version}
-Obsoletes:     php71u-pecl-%{pecl_name}2 <= %{version}
-Obsoletes:     php71w-pecl-%{pecl_name}2 <= %{version}
-%endif
 %endif
 
 %if 0%{?fedora} < 20 && 0%{?rhel} < 7
@@ -165,23 +133,12 @@ cat > %{ini_name} << 'EOF'
 extension=%{pecl_name}.so
 EOF
 
-%if %{with_zts}
-cp -r NTS ZTS
-%endif
-
 
 %build
 cd NTS
 %{_bindir}/phpize
 %configure  --with-php-config=%{_bindir}/php-config
 make %{?_smp_mflags}
-
-%if %{with_zts}
-cd ../ZTS
-%{_bindir}/zts-phpize
-%configure  --with-php-config=%{_bindir}/zts-php-config
-make %{?_smp_mflags}
-%endif
 
 
 %install
@@ -194,11 +151,6 @@ install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
 
 # install config file
 install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
-
-%if %{with_zts}
-make -C ZTS install INSTALL_ROOT=%{buildroot}
-install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
-%endif
 
 
 # Documentation
@@ -239,14 +191,8 @@ fi
   rm ?TS/tests/151.solrcollapsefunction_illegal_operations.phpt
 %endif
 
-%if %{with_tests}
-sed -e '/SOLR_SERVER_CONFIGURED/s/false/true/' \
-    -e '/SOLR_SERVER_HOSTNAME/s/solr5/localhost/' \
-    -i ?TS/tests/test.config.inc
-%else
 sed -e '/SOLR_SERVER_CONFIGURED/s/true/false/' \
     -i ?TS/tests/test.config.inc
-%endif
 
 : Minimal load test for NTS installed extension
 %{__php} \
@@ -264,31 +210,9 @@ NO_INTERACTION=1 \
 TEST_PHP_EXECUTABLE=%{__php} \
 %{__php} -n run-tests.php --show-diff
 
-%if %{with_zts}
-: Minimal load test for ZTS installed extension
-%{__ztsphp} \
-   -n \
-   -d extension=curl.so \
-   -d extension=json.so \
-   -d extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
-   -m | grep %{pecl_name}
-
-: Upstream test suite for ZTS extension
-cd ../ZTS
-TEST_PHP_ARGS="-n -d extension=curl.so -d extension=json.so -d extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so" \
-REPORT_EXIT_STATUS=1 \
-NO_INTERACTION=1 \
-TEST_PHP_EXECUTABLE=%{__ztsphp} \
-%{__ztsphp} -n run-tests.php --show-diff
-%endif
-
-
-%clean
-rm -rf %{buildroot}
 
 
 %files
-%defattr(-, root, root, -)
 %{?_licensedir:%license NTS/LICENSE}
 %doc %{pecl_docdir}/%{pecl_name}
 %{pecl_xmldir}/%{name}.xml
@@ -296,18 +220,10 @@ rm -rf %{buildroot}
 %config(noreplace) %{php_inidir}/%{ini_name}
 %{php_extdir}/%{pecl_name}.so
 
-%if %{with_zts}
-%config(noreplace) %{php_ztsinidir}/%{ini_name}
-%{php_ztsextdir}/%{pecl_name}.so
-%endif
-
 
 %changelog
-* Thu Dec  1 2016 Remi Collet <remi@fedoraproject.org> - 2.4.0-3
-- rebuild with PHP 7.1.0 GA
-
-* Wed Sep 14 2016 Remi Collet <remi@fedoraproject.org> - 2.4.0-2
-- rebuild for PHP 7.1 new API version
+* Mon Dec  5 2016 Remi Collet <remi@fedoraproject.org> - 2.4.0-1
+- cleanup for SCLo build
 
 * Wed Mar 30 2016 Remi Collet <remi@fedoraproject.org> - 2.4.0-1
 - update to 2.4.0 (stable)
