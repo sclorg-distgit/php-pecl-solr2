@@ -5,7 +5,7 @@
 #
 # Fedora spec file for php-pecl-solr2
 #
-# Copyright (c) 2011-2016 Remi Collet
+# Copyright (c) 2011-2017 Remi Collet
 # Copyright (c) 2010 Johan Cwiklinski
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
@@ -13,7 +13,6 @@
 # Please, preserve the changelog entries
 #
 %if 0%{?scl:1}
-%scl_package       php-pecl-solr2
 %global sub_prefix %{scl_prefix}
 %if "%{scl}" == "rh-php56"
 %global sub_prefix sclo-php56-
@@ -21,6 +20,10 @@
 %if "%{scl}" == "rh-php70"
 %global sub_prefix sclo-php70-
 %endif
+%if "%{scl}" == "rh-php71"
+%global sub_prefix sclo-php71-
+%endif
+%scl_package       php-pecl-solr2
 %endif
 
 %global pecl_name solr
@@ -32,7 +35,7 @@ Summary:        Object oriented API to Apache Solr
 Summary(fr):    API orientée objet pour Apache Solr
 Name:           %{?sub_prefix}php-pecl-solr2
 Version:        2.4.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        PHP
 Group:          Development/Languages
 URL:            http://pecl.php.net/package/solr
@@ -142,8 +145,6 @@ make %{?_smp_mflags}
 
 
 %install
-rm -rf %{buildroot}
-
 make -C NTS install INSTALL_ROOT=%{buildroot}
 
 # Install XML package description
@@ -159,7 +160,6 @@ do install -Dpm 644 NTS/$i %{buildroot}%{pecl_docdir}/%{pecl_name}/$i
 done
 
 
-%if 0%{?fedora} < 24
 # when pear installed alone, after us
 %triggerin -- %{?scl_prefix}php-pear
 if [ -x %{__pecl} ] ; then
@@ -176,7 +176,6 @@ fi
 if [ $1 -eq 0 -a -x %{__pecl} ] ; then
     %{pecl_uninstall} %{pecl_name} >/dev/null || :
 fi
-%endif
 
 
 %check
@@ -222,6 +221,9 @@ TEST_PHP_EXECUTABLE=%{__php} \
 
 
 %changelog
+* Thu Aug 10 2017 Remi Collet <remi@remirepo.net> - 2.4.0-2
+- change for sclo-php71
+
 * Mon Dec  5 2016 Remi Collet <remi@fedoraproject.org> - 2.4.0-1
 - cleanup for SCLo build
 
