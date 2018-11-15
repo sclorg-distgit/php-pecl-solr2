@@ -5,7 +5,7 @@
 #
 # Fedora spec file for php-pecl-solr2
 #
-# Copyright (c) 2011-2017 Remi Collet
+# Copyright (c) 2011-2018 Remi Collet
 # Copyright (c) 2010 Johan Cwiklinski
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
@@ -14,14 +14,14 @@
 #
 %if 0%{?scl:1}
 %global sub_prefix %{scl_prefix}
-%if "%{scl}" == "rh-php56"
-%global sub_prefix sclo-php56-
-%endif
 %if "%{scl}" == "rh-php70"
 %global sub_prefix sclo-php70-
 %endif
 %if "%{scl}" == "rh-php71"
 %global sub_prefix sclo-php71-
+%endif
+%if "%{scl}" == "rh-php72"
+%global sub_prefix sclo-php72-
 %endif
 %scl_package       php-pecl-solr2
 %endif
@@ -35,12 +35,17 @@ Summary:        Object oriented API to Apache Solr
 Summary(fr):    API orientée objet pour Apache Solr
 Name:           %{?sub_prefix}php-pecl-solr2
 Version:        2.4.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 License:        PHP
 Group:          Development/Languages
 URL:            http://pecl.php.net/package/solr
 
 Source0:        http://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
+
+Patch0:         upstream.patch
+Patch1:         0001-fix-Wimplicit-function-declaration.patch
+Patch2:         0003-Fix-Wincompatible-pointer-types-with-7.3.patch
+Patch3:         0005-fix-segfault-in-013.solrclient_getByIds.sh.patch
 
 BuildRequires:  %{?scl_prefix}php-devel
 BuildRequires:  %{?scl_prefix}php-pear
@@ -119,6 +124,10 @@ sed -e 's/role="test"/role="src"/' \
 mv %{pecl_name}-%{version}%{?prever} NTS
 
 cd NTS
+%patch0 -p1 -b .upstream
+%patch1 -p1 -b .up1
+%patch2 -p1 -b .up2
+%patch3 -p1 -b .up3
 
 # Check version
 DIR=src/php$(%{__php} -r 'echo PHP_MAJOR_VERSION;')
@@ -221,6 +230,9 @@ TEST_PHP_EXECUTABLE=%{__php} \
 
 
 %changelog
+* Thu Nov 15 2018 Remi Collet <remi@remirepo.net> - 2.4.0-3
+- build for sclo-php72
+
 * Thu Aug 10 2017 Remi Collet <remi@remirepo.net> - 2.4.0-2
 - change for sclo-php71
 

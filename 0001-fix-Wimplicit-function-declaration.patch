@@ -1,0 +1,24 @@
+From c07233b6975099d928ab487eb1dad929cca43531 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@php.net>
+Date: Fri, 12 Oct 2018 13:49:25 +0200
+Subject: [PATCH 1/5] fix [-Wimplicit-function-declaration]
+
+---
+ src/php7/php_solr.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/php7/php_solr.h b/src/php7/php_solr.h
+index 0d32864..3704ec0 100644
+--- a/src/php7/php_solr.h
++++ b/src/php7/php_solr.h
+@@ -642,6 +642,7 @@ PHP_SOLR_API void solr_collapse_function_register_class_constants(zend_class_ent
+ PHP_SOLR_API void solr_response_register_class_properties(zend_class_entry *ce TSRMLS_DC);
+ PHP_SOLR_API void solr_response_register_class_constants(zend_class_entry *ce TSRMLS_DC);
+ PHP_SOLR_API void solr_exception_register_class_properties(zend_class_entry *ce TSRMLS_DC);
++PHP_SOLR_API void solr_input_document_register_class_constants(zend_class_entry *ce TSRMLS_DC);
+ 
+ PHP_SOLR_API void solr_set_response_object_properties(zend_class_entry *scope, zval *response_object, const solr_client_t *client, const solr_string_t *request_url, zend_bool success TSRMLS_DC);
+ PHP_SOLR_API void solr_throw_exception_ex(zend_class_entry *exception_ce, long code TSRMLS_DC, const char *filename, int file_line, const char *function_name, char *format, ...);
+-- 
+2.14.4
+
