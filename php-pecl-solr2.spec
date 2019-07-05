@@ -5,7 +5,7 @@
 #
 # Fedora spec file for php-pecl-solr2
 #
-# Copyright (c) 2011-2018 Remi Collet
+# Copyright (c) 2011-2019 Remi Collet
 # Copyright (c) 2010 Johan Cwiklinski
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
@@ -23,6 +23,9 @@
 %if "%{scl}" == "rh-php72"
 %global sub_prefix sclo-php72-
 %endif
+%if "%{scl}" == "rh-php73"
+%global sub_prefix sclo-php73-
+%endif
 %scl_package       php-pecl-solr2
 %endif
 
@@ -34,20 +37,15 @@
 Summary:        Object oriented API to Apache Solr
 Summary(fr):    API orientée objet pour Apache Solr
 Name:           %{?sub_prefix}php-pecl-solr2
-Version:        2.4.0
-Release:        3%{?dist}
+Version:        2.5.0
+Release:        1%{?dist}
 License:        PHP
 Group:          Development/Languages
 URL:            http://pecl.php.net/package/solr
 
 Source0:        http://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
 
-Patch0:         upstream.patch
-Patch1:         0001-fix-Wimplicit-function-declaration.patch
-Patch2:         0003-Fix-Wincompatible-pointer-types-with-7.3.patch
-Patch3:         0005-fix-segfault-in-013.solrclient_getByIds.sh.patch
-
-BuildRequires:  %{?scl_prefix}php-devel
+BuildRequires:  %{?scl_prefix}php-devel > 7
 BuildRequires:  %{?scl_prefix}php-pear
 BuildRequires:  %{?scl_prefix}php-curl
 BuildRequires:  %{?scl_prefix}php-json
@@ -124,11 +122,6 @@ sed -e 's/role="test"/role="src"/' \
 mv %{pecl_name}-%{version}%{?prever} NTS
 
 cd NTS
-%patch0 -p1 -b .upstream
-%patch1 -p1 -b .up1
-%patch2 -p1 -b .up2
-%patch3 -p1 -b .up3
-
 # Check version
 DIR=src/php$(%{__php} -r 'echo PHP_MAJOR_VERSION;')
 extver=$(sed -n '/#define PHP_SOLR_VERSION /{s/.* "//;s/".*$//;p}' $DIR/php_solr_version.h)
@@ -188,17 +181,6 @@ fi
 
 
 %check
-: Ignore test with jsonc before 1.3.9
-%{__php} -r '
-  $v=phpversion("json");
-  exit(version_compare($v,"1.3.0",">=") && version_compare($v,"1.3.9","<") ? 0 : 1);
-' && rm ?TS/tests/bug_67394.phpt
-
-: Ignore test with old PHP 5.3
-%if "%{php_version}" < "5.4"
-  rm ?TS/tests/151.solrcollapsefunction_illegal_operations.phpt
-%endif
-
 sed -e '/SOLR_SERVER_CONFIGURED/s/true/false/' \
     -i ?TS/tests/test.config.inc
 
@@ -230,6 +212,9 @@ TEST_PHP_EXECUTABLE=%{__php} \
 
 
 %changelog
+* Fri Jul  5 2019 Remi Collet <remi@remirepo.net> - 2.5.0-1
+- update to 2.5.0
+
 * Thu Nov 15 2018 Remi Collet <remi@remirepo.net> - 2.4.0-3
 - build for sclo-php72
 
